@@ -1,0 +1,464 @@
+
+name: gedit
+version: 3.22.0
+summary: Edit text files
+description: |
+  gedit is the official text editor of the GNOME desktop environment.
+  While aiming at simplicity and ease of use, gedit is a powerful general
+  purpose text editor.
+
+  Whether you are writing the next bestseller, programming an innovative
+  application, or simply taking some quick notes, gedit will be a reliable
+  tool to accomplish your task.
+
+  Its flexible plugin system allows you to tailor the application to your
+  needs and adapt it to your workflow.
+
+grade: stable # must be 'stable' to release into candidate/stable channels
+confinement: strict
+
+plugs:
+    gnome-3-24-platform:
+      interface: content
+      target: $SNAP/gnome-platform
+      default-provider: gnome-3-24:gnome-3-24-platform
+
+slots:
+  # for GtkApplication registration
+  gedit:
+    interface: dbus
+    bus: session
+    name: org.gnome.gedit
+
+apps:
+  gedit:
+    command: desktop-launch gedit
+    plugs:
+      - network
+      - x11
+      - home
+      - gsettings
+      - unity7
+    desktop: usr/share/applications/org.gnome.gedit.desktop
+    environment:
+      GSETTINGS_SCHEMA_DIR: $SNAP/share/glib-2.0/schemas
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/lib/gedit
+
+parts:
+  desktop-gnome-platform:
+    source-subdir: gtk
+    plugin: make
+    make-parameters: ["FLAVOR=gtk3"]
+    build-packages:
+      - libgtk-3-dev
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-branch: master
+    install: mkdir -p $SNAPCRAFT_PART_INSTALL/gnome-platform
+
+  gedit:
+    source: https://git.gnome.org/browse/gedit
+    source-type: git
+    source-branch: master
+    plugin: autotools
+    # workaround the issue described in https://launchpad.net/bugs/1583250
+    configflags: [--prefix=/snap/gedit/current/usr]
+    organize:
+      snap/gedit/current/usr: usr
+    build-packages:
+      - desktop-file-utils
+      - gettext
+      - gnome-common
+      - gsettings-desktop-schemas-dev
+      - gtk-doc-tools
+      - intltool
+      - libsoup2.4-dev
+      - libgspell-1-dev
+      - libxml2-dev
+      - libglib2.0-dev
+      - libgtk-3-dev
+      - libgtksourceview-3.0-dev
+      - libpeas-dev
+      - libx11-dev
+      - python3
+      - python-gi-dev
+      - yelp-tools
+      - gobject-introspection
+      - libgirepository1.0-dev
+      - valac
+  # workaround snapcraft trying to outsmart us by copying ldd listed libraries
+  workaround:
+    plugin: nil
+    stage-packages:
+      - libgspell-1-1
+      - libgtksourceview-3.0-1
+      - libpeas-1.0-0
+      - libgtk-3-0
+      - gir1.2-peas-1.0
+      - gir1.2-gtk-3.0
+      - gir1.2-gtksource-3.0
+      - gir1.2-glib-2.0
+      - gir1.2-pango-1.0
+    prime:
+      - "-lib"
+      - "-usr/libexec"
+      - "-usr/sbin"
+      - "-usr/include"
+      - "-usr/share/doc"
+      - "-usr/share/fonts"
+      - "-usr/share/help"
+      - "-usr/share/icons"
+      - "-usr/share/locale"
+      - "-usr/share/mime"
+      - "-usr/share/X11"
+      - "-usr/lib/*/avahi"
+      - "-usr/lib/*/dri"
+      - "-usr/lib/*/gdk*"
+      - "-usr/lib/*/gio*"
+      - "-usr/lib/*/glib-2.0"
+      - "-usr/lib/*/gtk-3.0"
+      - "-usr/lib/*/mesa-egl"
+      - "-usr/lib/*/krb5"
+      - "-usr/lib/*/libasound.so.2"
+      - "-usr/lib/*/libasound.so.2.0.0"
+      - "-usr/lib/*/libaspell.so.15"
+      - "-usr/lib/*/libaspell.so.15.2.0"
+      - "-usr/lib/*/libatk-1.0.so.0"
+      - "-usr/lib/*/libatk-1.0.so.0.22209.1"
+      - "-usr/lib/*/libatk-bridge-2.0.so.0"
+      - "-usr/lib/*/libatk-bridge-2.0.so.0.0.0"
+      - "-usr/lib/*/libatspi.so.0"
+      - "-usr/lib/*/libatspi.so.0.0.1"
+      - "-usr/lib/*/libavahi-client.so.3"
+      - "-usr/lib/*/libavahi-client.so.3.2.9"
+      - "-usr/lib/*/libavahi-common.so.3"
+      - "-usr/lib/*/libavahi-common.so.3.5.3"
+      - "-usr/lib/*/libcairo-gobject.so.2"
+      - "-usr/lib/*/libcairo-gobject.so.2.11400.6"
+      - "-usr/lib/*/libcairo.so.2"
+      - "-usr/lib/*/libcairo.so.2.11400.6"
+      - "-usr/lib/*/libcanberra-gtk3.so.0"
+      - "-usr/lib/*/libcanberra-gtk3.so.0.1.9"
+      - "-usr/lib/*/libcanberra.so.0"
+      - "-usr/lib/*/libcanberra.so.0.2.5"
+      - "-usr/lib/*/libclutter-1.0.so.0"
+      - "-usr/lib/*/libclutter-1.0.so.0.2600.0"
+      - "-usr/lib/*/libclutter-glx-1.0.so.0"
+      - "-usr/lib/*/libclutter-gst-3.0.so.0"
+      - "-usr/lib/*/libclutter-gst-3.0.so.0.24.0"
+      - "-usr/lib/*/libclutter-gtk-1.0.so.0"
+      - "-usr/lib/*/libclutter-gtk-1.0.so.0.800.2"
+      - "-usr/lib/*/libcogl-pango.so.20"
+      - "-usr/lib/*/libcogl-pango.so.20.4.2"
+      - "-usr/lib/*/libcogl-path.so.20"
+      - "-usr/lib/*/libcogl-path.so.20.4.2"
+      - "-usr/lib/*/libcogl.so.20"
+      - "-usr/lib/*/libcogl.so.20.4.2"
+      - "-usr/lib/*/libcolordprivate.so.2"
+      - "-usr/lib/*/libcolordprivate.so.2.0.4"
+      - "-usr/lib/*/libcolord.so.2"
+      - "-usr/lib/*/libcolord.so.2.0.4"
+      - "-usr/lib/*/libcroco-0.6.so.3"
+      - "-usr/lib/*/libcroco-0.6.so.3.0.1"
+      - "-usr/lib/*/libcups.so.2"
+      - "-usr/lib/*/libdatrie.so.1"
+      - "-usr/lib/*/libdatrie.so.1.3.3"
+      - "-usr/lib/*/libdbus-glib-1.so.2"
+      - "-usr/lib/*/libdbus-glib-1.so.2.3.3"
+      - "-usr/lib/*/libdconf.so.1"
+      - "-usr/lib/*/libdconf.so.1.0.0"
+      - "-usr/lib/*/libdrm_amdgpu.so.1"
+      - "-usr/lib/*/libdrm_amdgpu.so.1.0.0"
+      - "-usr/lib/*/libdrm_intel.so.1"
+      - "-usr/lib/*/libdrm_intel.so.1.0.0"
+      - "-usr/lib/*/libdrm_nouveau.so.2"
+      - "-usr/lib/*/libdrm_nouveau.so.2.0.0"
+      - "-usr/lib/*/libdrm_radeon.so.1"
+      - "-usr/lib/*/libdrm_radeon.so.1.0.1"
+      - "-usr/lib/*/libdrm.so.2"
+      - "-usr/lib/*/libdrm.so.2.4.0"
+      - "-usr/lib/*/libedit.so.2"
+      - "-usr/lib/*/libedit.so.2.0.53"
+      - "-usr/lib/*/libelf-0.165.so"
+      - "-usr/lib/*/libelf.so.1"
+      - "-usr/lib/*/libenchant.so.1"
+      - "-usr/lib/*/libenchant.so.1.6.0"
+      - "-usr/lib/*/libepoxy.so.0"
+      - "-usr/lib/*/libepoxy.so.0.0.0"
+      - "-usr/lib/*/libevdev.so.2"
+      - "-usr/lib/*/libevdev.so.2.1.12"
+      - "-usr/lib/*/libexpatw.so.1"
+      - "-usr/lib/*/libexpatw.so.1.6.0"
+      - "-usr/lib/*/libexslt.so.0"
+      - "-usr/lib/*/libexslt.so.0.8.17"
+      - "-usr/lib/*/libfcitx-gclient.so.0"
+      - "-usr/lib/*/libfcitx-gclient.so.0.1"
+      - "-usr/lib/*/libfcitx-utils.so.0"
+      - "-usr/lib/*/libfcitx-utils.so.0.1"
+      - "-usr/lib/*/libffi.so.6"
+      - "-usr/lib/*/libffi.so.6.0.4"
+      - "-usr/lib/*/libfontconfig.so.1"
+      - "-usr/lib/*/libfontconfig.so.1.9.0"
+      - "-usr/lib/*/libfreetype.so.6"
+      - "-usr/lib/*/libfreetype.so.6.12.1"
+      - "-usr/lib/*/libgailutil-3.so.0"
+      - "-usr/lib/*/libgailutil-3.so.0.0.0"
+      - "-usr/lib/*/libgbm.so.1"
+      - "-usr/lib/*/libgbm.so.1.0.0"
+      - "-usr/lib/*/libgck-1.so.0"
+      - "-usr/lib/*/libgck-1.so.0.0.0"
+      - "-usr/lib/*/libgcr-base-3.so.1"
+      - "-usr/lib/*/libgcr-base-3.so.1.0.0"
+      - "-usr/lib/*/libgcr-ui-3.so.1"
+      - "-usr/lib/*/libgcr-ui-3.so.1.0.0"
+      - "-usr/lib/*/libgdk-3.so.0"
+      - "-usr/lib/*/libgdk-3.so.0.2200.15"
+      - "-usr/lib/*/libgdk_pixbuf-2.0.so.0"
+      - "-usr/lib/*/libgdk_pixbuf-2.0.so.0.3600.5"
+      - "-usr/lib/*/libgdk_pixbuf_xlib-2.0.so.0"
+      - "-usr/lib/*/libgdk_pixbuf_xlib-2.0.so.0.3600.5"
+      - "-usr/lib/*/libgdk-x11-2.0.so.0"
+      - "-usr/lib/*/libgdk-x11-2.0.so.0.2400.30"
+      - "-usr/lib/*/libgeoclue.so.0"
+      - "-usr/lib/*/libgeoclue.so.0.0.0"
+      - "-usr/lib/*/libgio-2.0.so.0"
+      - "-usr/lib/*/libgio-2.0.so.0.5301.0"
+      - "-usr/lib/*/libglapi.so.0"
+      - "-usr/lib/*/libglapi.so.0.0.0"
+      - "-usr/lib/*/libgmodule-2.0.so.0"
+      - "-usr/lib/*/libgmodule-2.0.so.0.5301.0"
+      - "-usr/lib/*/libgmp.so.10"
+      - "-usr/lib/*/libgmp.so.10.3.0"
+      - "-usr/lib/*/libgnutls.so.30"
+      - "-usr/lib/*/libgnutls.so.30.6.2"
+      - "-usr/lib/*/libgobject-2.0.so.0"
+      - "-usr/lib/*/libgobject-2.0.so.0.5301.0"
+      - "-usr/lib/*/libgraphite2.so.2.0.0"
+      - "-usr/lib/*/libgraphite2.so.3"
+      - "-usr/lib/*/libgraphite2.so.3.0.1"
+      - "-usr/lib/*/libgssapi_krb5.so.2"
+      - "-usr/lib/*/libgssapi_krb5.so.2.2"
+      - "-usr/lib/*/libgstallocators-1.0.so.0"
+      - "-usr/lib/*/libgstallocators-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstapp-1.0.so.0"
+      - "-usr/lib/*/libgstapp-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstaudio-1.0.so.0"
+      - "-usr/lib/*/libgstaudio-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstbase-1.0.so.0"
+      - "-usr/lib/*/libgstbase-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstbasecamerabinsrc-1.0.so.0"
+      - "-usr/lib/*/libgstbasecamerabinsrc-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstcheck-1.0.so.0"
+      - "-usr/lib/*/libgstcheck-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstcontroller-1.0.so.0"
+      - "-usr/lib/*/libgstcontroller-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstfft-1.0.so.0"
+      - "-usr/lib/*/libgstfft-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstnet-1.0.so.0"
+      - "-usr/lib/*/libgstnet-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstpbutils-1.0.so.0"
+      - "-usr/lib/*/libgstpbutils-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstphotography-1.0.so.0"
+      - "-usr/lib/*/libgstphotography-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstreamer-1.0.so.0"
+      - "-usr/lib/*/libgstreamer-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstriff-1.0.so.0"
+      - "-usr/lib/*/libgstriff-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstrtp-1.0.so.0"
+      - "-usr/lib/*/libgstrtp-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstrtsp-1.0.so.0"
+      - "-usr/lib/*/libgstrtsp-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstsdp-1.0.so.0"
+      - "-usr/lib/*/libgstsdp-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgsttag-1.0.so.0"
+      - "-usr/lib/*/libgsttag-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgstvideo-1.0.so.0"
+      - "-usr/lib/*/libgstvideo-1.0.so.0.1200.0"
+      - "-usr/lib/*/libgthread-2.0.so.0"
+      - "-usr/lib/*/libgthread-2.0.so.0.5301.0"
+      - "-usr/lib/*/libgtk-3.so.0"
+      - "-usr/lib/*/libgtk-3.so.0.2200.15"
+      - "-usr/lib/*/libgtk-x11-2.0.so.0"
+      - "-usr/lib/*/libgtk-x11-2.0.so.0.2400.30"
+      - "-usr/lib/*/libgudev-1.0.so.0"
+      - "-usr/lib/*/libgudev-1.0.so.0.2.0"
+      - "-usr/lib/*/libharfbuzz-icu.so.0"
+      - "-usr/lib/*/libharfbuzz-icu.so.0.10000.1"
+      - "-usr/lib/*/libharfbuzz.so.0"
+      - "-usr/lib/*/libharfbuzz.so.0.10000.1"
+      - "-usr/lib/*/libhogweed.so.4"
+      - "-usr/lib/*/libhogweed.so.4.2"
+      - "-usr/lib/*/libhunspell-1.3.so.0"
+      - "-usr/lib/*/libhunspell-1.3.so.0.0.0"
+      - "-usr/lib/*/libhyphen.so.0"
+      - "-usr/lib/*/libhyphen.so.0.3.0"
+      - "-usr/lib/*/libibus-1.0.so.5"
+      - "-usr/lib/*/libibus-1.0.so.5.0.514"
+      - "-usr/lib/*/libicudata.so.55"
+      - "-usr/lib/*/libicudata.so.55.1"
+      - "-usr/lib/*/libicui18n.so.55"
+      - "-usr/lib/*/libicui18n.so.55.1"
+      - "-usr/lib/*/libicuio.so.55"
+      - "-usr/lib/*/libicuio.so.55.1"
+      - "-usr/lib/*/libicule.so.55"
+      - "-usr/lib/*/libicule.so.55.1"
+      - "-usr/lib/*/libiculx.so.55"
+      - "-usr/lib/*/libiculx.so.55.1"
+      - "-usr/lib/*/libicutest.so.55"
+      - "-usr/lib/*/libicutest.so.55.1"
+      - "-usr/lib/*/libicutu.so.55"
+      - "-usr/lib/*/libicutu.so.55.1"
+      - "-usr/lib/*/libicuuc.so.55"
+      - "-usr/lib/*/libicuuc.so.55.1"
+      - "-usr/lib/*/libidn.so.11"
+      - "-usr/lib/*/libidn.so.11.6.15"
+      - "-usr/lib/*/libinput.so.10"
+      - "-usr/lib/*/libinput.so.10.7.5"
+      - "-usr/lib/*/libjavascriptcoregtk-4.0.so.18"
+      - "-usr/lib/*/libjavascriptcoregtk-4.0.so.18.5.10"
+      - "-usr/lib/*/libjbig.so.0"
+      - "-usr/lib/*/libjpeg.so.8"
+      - "-usr/lib/*/libjpeg.so.8.0.2"
+      - "-usr/lib/*/libjson-glib-1.0.so.0"
+      - "-usr/lib/*/libjson-glib-1.0.so.0.102.0"
+      - "-usr/lib/*/libk5crypto.so.3"
+      - "-usr/lib/*/libk5crypto.so.3.1"
+      - "-usr/lib/*/libkrb5.so.3"
+      - "-usr/lib/*/libkrb5.so.3.3"
+      - "-usr/lib/*/libkrb5support.so.0"
+      - "-usr/lib/*/libkrb5support.so.0.1"
+      - "-usr/lib/*/liblcms2.so.2"
+      - "-usr/lib/*/liblcms2.so.2.0.6"
+      - "-usr/lib/*/libLLVM-3.8.so"
+      - "-usr/lib/*/libLLVM-3.8.so.1"
+      - "-usr/lib/*/libltdl.so.7"
+      - "-usr/lib/*/libltdl.so.7.3.1"
+      - "-usr/lib/*/libmtdev.so.1"
+      - "-usr/lib/*/libmtdev.so.1.0.0"
+      - "-usr/lib/*/libnettle.so.6"
+      - "-usr/lib/*/libnettle.so.6.2"
+      - "-usr/lib/*/libnotify.so.4"
+      - "-usr/lib/*/libnotify.so.4.0.0"
+      - "-usr/lib/*/libogg.so.0"
+      - "-usr/lib/*/libogg.so.0.8.2"
+      - "-usr/lib/*/liborc-0.4.so.0"
+      - "-usr/lib/*/liborc-0.4.so.0.25.0"
+      - "-usr/lib/*/liborc-test-0.4.so.0"
+      - "-usr/lib/*/liborc-test-0.4.so.0.25.0"
+      - "-usr/lib/*/libp11-kit.so.0"
+      - "-usr/lib/*/libp11-kit.so.0.1.0"
+      - "-usr/lib/*/libpango-1.0.so.0"
+      - "-usr/lib/*/libpango-1.0.so.0.4000.5"
+      - "-usr/lib/*/libpangocairo-1.0.so.0"
+      - "-usr/lib/*/libpangocairo-1.0.so.0.4000.5"
+      - "-usr/lib/*/libpangoft2-1.0.so.0"
+      - "-usr/lib/*/libpangoft2-1.0.so.0.4000.5"
+      - "-usr/lib/*/libpciaccess.so.0"
+      - "-usr/lib/*/libpciaccess.so.0.11.1"
+      - "-usr/lib/*/libpixman-1.so.0"
+      - "-usr/lib/*/libpixman-1.so.0.33.6"
+      - "-usr/lib/*/libpng12.so.0"
+      - "-usr/lib/*/libpng16.so.16"
+      - "-usr/lib/*/libpng16.so.16.29.0"
+      - "-usr/lib/*/libpresage.so.1"
+      - "-usr/lib/*/libpresage.so.1.1.1"
+      - "-usr/lib/*/libproxy.so.1"
+      - "-usr/lib/*/libproxy.so.1.0.0"
+      - "-usr/lib/*/libpspell.so.15"
+      - "-usr/lib/*/libpspell.so.15.2.0"
+      - "-usr/lib/*/librest-0.7.so.0"
+      - "-usr/lib/*/librest-0.7.so.0.0.0"
+      - "-usr/lib/*/librsvg-2.so.2"
+      - "-usr/lib/*/librsvg-2.so.2.40.13"
+      - "-usr/lib/*/libsecret-1.so.0"
+      - "-usr/lib/*/libsecret-1.so.0.0.0"
+      - "-usr/lib/*/libsoup-2.4.so.1"
+      - "-usr/lib/*/libsoup-2.4.so.1.8.0"
+      - "-usr/lib/*/libsoup-gnome-2.4.so.1"
+      - "-usr/lib/*/libsoup-gnome-2.4.so.1.8.0"
+      - "-usr/lib/*/libsqlite3.so.0"
+      - "-usr/lib/*/libsqlite3.so.0.8.6"
+      - "-usr/lib/*/libtasn1.so.6"
+      - "-usr/lib/*/libtasn1.so.6.5.1"
+      - "-usr/lib/*/libtdb.so.1"
+      - "-usr/lib/*/libtdb.so.1.3.8"
+      - "-usr/lib/*/libthai.so.0"
+      - "-usr/lib/*/libthai.so.0.2.4"
+      - "-usr/lib/*/libtiff.so.5"
+      - "-usr/lib/*/libtiff.so.5.2.4"
+      - "-usr/lib/*/libtinyxml.so.2.6.2"
+      - "-usr/lib/*/libunity-gtk3-parser.so.0"
+      - "-usr/lib/*/libunity-gtk3-parser.so.0.0.0"
+      - "-usr/lib/*/libvorbisfile.so.3"
+      - "-usr/lib/*/libvorbisfile.so.3.3.7"
+      - "-usr/lib/*/libvorbis.so.0"
+      - "-usr/lib/*/libvorbis.so.0.4.8"
+      - "-usr/lib/*/libwacom.so.2"
+      - "-usr/lib/*/libwacom.so.2.4.5"
+      - "-usr/lib/*/libwayland-client.so.0"
+      - "-usr/lib/*/libwayland-client.so.0.3.0"
+      - "-usr/lib/*/libwayland-cursor.so.0"
+      - "-usr/lib/*/libwayland-cursor.so.0.0.0"
+      - "-usr/lib/*/libwayland-egl.so.1"
+      - "-usr/lib/*/libwayland-egl.so.1.0.0"
+      - "-usr/lib/*/libwayland-server.so.0"
+      - "-usr/lib/*/libwayland-server.so.0.1.0"
+      - "-usr/lib/*/libwebkit2gtk-4.0.so.37"
+      - "-usr/lib/*/libwebkit2gtk-4.0.so.37.19.6"
+      - "-usr/lib/*/libwebp.so.5"
+      - "-usr/lib/*/libwebp.so.5.0.4"
+      - "-usr/lib/*/libX11.so.6"
+      - "-usr/lib/*/libX11.so.6.3.0"
+      - "-usr/lib/*/libX11-xcb.so.1"
+      - "-usr/lib/*/libX11-xcb.so.1.0.0"
+      - "-usr/lib/*/libXau.so.6"
+      - "-usr/lib/*/libXau.so.6.0.0"
+      - "-usr/lib/*/libxcb-dri2.so.0"
+      - "-usr/lib/*/libxcb-dri2.so.0.0.0"
+      - "-usr/lib/*/libxcb-dri3.so.0"
+      - "-usr/lib/*/libxcb-dri3.so.0.0.0"
+      - "-usr/lib/*/libxcb-glx.so.0"
+      - "-usr/lib/*/libxcb-glx.so.0.0.0"
+      - "-usr/lib/*/libxcb-present.so.0"
+      - "-usr/lib/*/libxcb-present.so.0.0.0"
+      - "-usr/lib/*/libxcb-render.so.0"
+      - "-usr/lib/*/libxcb-render.so.0.0.0"
+      - "-usr/lib/*/libxcb-shm.so.0"
+      - "-usr/lib/*/libxcb-shm.so.0.0.0"
+      - "-usr/lib/*/libxcb.so.1"
+      - "-usr/lib/*/libxcb.so.1.1.0"
+      - "-usr/lib/*/libxcb-sync.so.1"
+      - "-usr/lib/*/libxcb-sync.so.1.0.0"
+      - "-usr/lib/*/libxcb-xfixes.so.0"
+      - "-usr/lib/*/libxcb-xfixes.so.0.0.0"
+      - "-usr/lib/*/libXcomposite.so.1"
+      - "-usr/lib/*/libXcomposite.so.1.0.0"
+      - "-usr/lib/*/libXcursor.so.1"
+      - "-usr/lib/*/libXcursor.so.1.0.2"
+      - "-usr/lib/*/libXdamage.so.1"
+      - "-usr/lib/*/libXdamage.so.1.1.0"
+      - "-usr/lib/*/libXdmcp.so.6"
+      - "-usr/lib/*/libXdmcp.so.6.0.0"
+      - "-usr/lib/*/libXext.so.6"
+      - "-usr/lib/*/libXext.so.6.4.0"
+      - "-usr/lib/*/libXfixes.so.3"
+      - "-usr/lib/*/libXfixes.so.3.1.0"
+      - "-usr/lib/*/libXinerama.so.1"
+      - "-usr/lib/*/libXinerama.so.1.0.0"
+      - "-usr/lib/*/libXi.so.6"
+      - "-usr/lib/*/libXi.so.6.1.0"
+      - "-usr/lib/*/libxkbcommon.so.0"
+      - "-usr/lib/*/libxkbcommon.so.0.0.0"
+      - "-usr/lib/*/libxml2.so.2"
+      - "-usr/lib/*/libxml2.so.2.9.4"
+      - "-usr/lib/*/libXrandr.so.2"
+      - "-usr/lib/*/libXrandr.so.2.2.0"
+      - "-usr/lib/*/libXrender.so.1"
+      - "-usr/lib/*/libXrender.so.1.3.0"
+      - "-usr/lib/*/libxshmfence.so.1"
+      - "-usr/lib/*/libxshmfence.so.1.0.0"
+      - "-usr/lib/*/libxslt.so.1"
+      - "-usr/lib/*/libxslt.so.1.1.28"
+      - "-usr/lib/*/libXtst.so.6"
+      - "-usr/lib/*/libXtst.so.6.1.0"
+      - "-usr/lib/*/libXxf86vm.so.1"
+      - "-usr/lib/*/libXxf86vm.so.1.0.0"
