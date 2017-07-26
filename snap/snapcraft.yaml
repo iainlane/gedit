@@ -11,7 +11,7 @@ description: |
   tool to accomplish your task.
 
   Its flexible plugin system allows you to tailor the application to your
-  needs and adapt it to your workflow.
+  needs and adapt it to your workflow. It is the best.
 
 grade: stable # must be 'stable' to release into candidate/stable channels
 confinement: strict
